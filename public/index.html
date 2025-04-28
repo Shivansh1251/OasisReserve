@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>OasisReserve Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  
+  <body class="bg-gray-100 text-gray-800">
+    <div class="max-w-6xl mx-auto py-10 px-6">
+      <h1 class="text-4xl font-bold text-center mb-10 text-indigo-600">OasisReserve Dashboard</h1>
+  
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Add Customer -->
+        <div class="bg-white shadow rounded-lg p-6">
+          <h2 class="text-xl font-semibold mb-4">Add Customer</h2>
+          <form id="customerForm" class="space-y-3">
+            <input class="w-full border p-2 rounded" type="text" id="name" placeholder="Customer Name" required />
+            <input class="w-full border p-2 rounded" type="email" id="email" placeholder="Email" required />
+            <button class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700" type="submit">Add</button>
+          </form>
+        </div>
+  
+        <!-- Add Service -->
+        <div class="bg-white shadow rounded-lg p-6">
+          <h2 class="text-xl font-semibold mb-4">Add Service</h2>
+          <form id="serviceForm" class="space-y-3">
+            <input class="w-full border p-2 rounded" type="text" id="serviceName" placeholder="Service Name" required />
+            <input class="w-full border p-2 rounded" type="number" id="price" placeholder="Price" required />
+            <button class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700" type="submit">Add</button>
+          </form>
+        </div>
+  
+        <!-- Make Reservation -->
+        <div class="bg-white shadow rounded-lg p-6">
+          <h2 class="text-xl font-semibold mb-4">Make Reservation</h2>
+          <form id="reservationForm" class="space-y-3">
+            <input class="w-full border p-2 rounded" type="text" id="customerId" placeholder="Customer ID" required />
+            <select class="w-full border p-2 rounded" id="serviceId" required>
+              <option value="" disabled selected>Select a Service</option>
+            </select>
+            <input class="w-full border p-2 rounded" type="datetime-local" id="dateTime" required />
+            <button class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700" type="submit">Book</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="mt-10">
+        <h2 class="text-2xl font-bold text-center mb-6 text-indigo-600">All Data</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <!-- Customers -->
+          <div class="bg-white shadow rounded-lg p-6">
+            <h3 class="text-xl font-semibold mb-4">Customers</h3>
+            <ul id="customerList" class="space-y-2"></ul>
+          </div>
+      
+          <!-- Services -->
+          <div class="bg-white shadow rounded-lg p-6">
+            <h3 class="text-xl font-semibold mb-4">Services</h3>
+            <ul id="serviceList" class="space-y-2"></ul>
+          </div>
+      
+          <!-- Reservations -->
+          <div class="bg-white shadow rounded-lg p-6">
+            <h3 class="text-xl font-semibold mb-4">Reservations</h3>
+            <ul id="reservationList" class="space-y-2"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    <script>
+      const BASE_URL = "http://localhost:8000";
+
+      const loadServicesDropdown = async () => {
+        const response = await fetch(`${BASE_URL}/services`);
+        const services = await response.json();
+        const serviceDropdown = document.getElementById("serviceId");
+        serviceDropdown.innerHTML = '<option value="" disabled selected>Select a Service</option>';
+        services.forEach((service) => {
+          const option = document.createElement("option");
+          option.value = service._id;
+          option.textContent = `${service.name} - $${service.price}`;
+          serviceDropdown.appendChild(option);
+        });
+      };
+
+      document.addEventListener("DOMContentLoaded", () => {
+        loadServicesDropdown();
+        loadCustomers();
+        loadServices();
+        loadReservations();
+      });
+
+      document.getElementById("customerForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const name = document.getElementById("name").value;
+        const email = document.getElementById("email").value;
+        const response = await fetch(`${BASE_URL}/customers`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email }),
+        });
+        const result = await response.json();
+        alert(`Customer added: ${result.name}`);
+      });
+
+      document.getElementById("serviceForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const name = document.getElementById("serviceName").value;
+        const price = document.getElementById("price").value;
+        const response = await fetch(`${BASE_URL}/services`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, price }),
+        });
+        const result = await response.json();
+        alert(`Service added: ${result.name}`);
+      });
+
+      document.getElementById("reservationForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const customerId = document.getElementById("customerId").value;
+        const serviceId = document.getElementById("serviceId").value;
+        const dateTime = document.getElementById("dateTime").value;
+        const response = await fetch(`${BASE_URL}/reservations`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ customerId, serviceId, bookingDate: dateTime }),
+        });
+        const result = await response.json();
+        alert(`Reservation made for Customer ID: ${result.customerId}`);
+      });
+
+      const loadCustomers = async () => {
+        const response = await fetch(`${BASE_URL}/customers`);
+        const customers = await response.json();
+        const customerList = document.getElementById("customerList");
+        customerList.innerHTML = "";
+        customers.forEach((customer) => {
+          const li = document.createElement("li");
+          li.innerHTML = `
+            <strong>ID:</strong> ${customer._id} <br>
+            <strong>Name:</strong> ${customer.name} <br>
+            <strong>Email:</strong> ${customer.email}
+            <div class="mt-2">
+              <button class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600" onclick="editCustomer('${customer._id}')">Edit</button>
+              <button class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600" onclick="deleteCustomer('${customer._id}')">Delete</button>
+            </div>
+          `;
+          customerList.appendChild(li);
+        });
+      };
+
+      const deleteCustomer = async (id) => {
+        if (confirm("Are you sure you want to delete this customer?")) {
+          await fetch(`${BASE_URL}/customers/${id}`, { method: "DELETE" });
+          loadCustomers();
+        }
+      };
+
+      const editCustomer = async (id) => {
+        const name = prompt("Enter new name:");
+        const email = prompt("Enter new email:");
+        if (name && email) {
+          await fetch(`${BASE_URL}/customers/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, email }),
+          });
+          loadCustomers();
+        }
+      };
+
+      const loadServices = async () => {
+        const response = await fetch(`${BASE_URL}/services`);
+        const services = await response.json();
+        const serviceList = document.getElementById("serviceList");
+        serviceList.innerHTML = "";
+        services.forEach((service) => {
+          const li = document.createElement("li");
+          li.innerHTML = `
+            ${service.name} - $${service.price}
+            <button class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600" onclick="editService('${service._id}')">Edit</button>
+            <button class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600" onclick="deleteService('${service._id}')">Delete</button>
+          `;
+          serviceList.appendChild(li);
+        });
+      };
+
+      const deleteService = async (id) => {
+        if (confirm("Are you sure you want to delete this service?")) {
+          await fetch(`${BASE_URL}/services/${id}`, { method: "DELETE" });
+          loadServices();
+        }
+      };
+
+      const editService = async (id) => {
+        const name = prompt("Enter new service name:");
+        const price = prompt("Enter new price:");
+        if (name && price) {
+          await fetch(`${BASE_URL}/services/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, price }),
+          });
+          loadServices();
+        }
+      };
+
+      const loadReservations = async () => {
+        const response = await fetch(`${BASE_URL}/reservations`);
+        const reservations = await response.json();
+        const reservationList = document.getElementById("reservationList");
+        reservationList.innerHTML = "";
+        reservations.forEach((reservation) => {
+          const li = document.createElement("li");
+          li.innerHTML = `
+            Customer: ${reservation.customerId?.name || "Unknown"}, 
+            Service: ${reservation.serviceId?.name || "Unknown"}, 
+            Date: ${new Date(reservation.bookingDate).toLocaleString()}
+            <button class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600" onclick="editReservation('${reservation._id}')">Edit</button>
+            <button class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600" onclick="deleteReservation('${reservation._id}')">Delete</button>
+          `;
+          reservationList.appendChild(li);
+        });
+      };
+
+      const deleteReservation = async (id) => {
+        if (confirm("Are you sure you want to delete this reservation?")) {
+          await fetch(`${BASE_URL}/reservations/${id}`, { method: "DELETE" });
+          loadReservations();
+        }
+      };
+
+      const editReservation = async (id) => {
+        const customerId = prompt("Enter new customer ID:");
+        const serviceId = prompt("Enter new service ID:");
+        const bookingDate = prompt("Enter new booking date (YYYY-MM-DDTHH:mm):");
+        if (customerId && serviceId && bookingDate) {
+          await fetch(`${BASE_URL}/reservations/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ customerId, serviceId, bookingDate }),
+          });
+          loadReservations();
+        }
+      };
+
+      document.addEventListener("DOMContentLoaded", () => {
+        loadCustomers();
+        loadServices();
+        loadReservations();
+      });
+    </script>
+  </body>
+  
+</html>
+
