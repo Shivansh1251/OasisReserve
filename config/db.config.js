@@ -1,7 +1,3 @@
-// module.exports = {
-//     url: process.env.MONGODB_URI || "mongodb://localhost:27017/my_database",
-//   }
-
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
