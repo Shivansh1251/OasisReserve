@@ -15,9 +15,9 @@ const app = express();
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-app.use('/customers', customerRoutes);
-app.use('/reservations', reservationRoutes);
-app.use('/services', serviceRoutes);
+app.use('/api/customers', customerRoutes);
+app.use('/api/reservations', reservationRoutes);
+app.use('/api/services', serviceRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
