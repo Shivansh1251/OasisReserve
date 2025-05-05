@@ -2,95 +2,252 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OasisReserve Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.8/main.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.8/main.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.8/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.8/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid@6.1.8/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@6.1.8/main.min.js"></script>
+    <style>
+      /* Custom CSS for a macOS-like user experience */
+      body {
+        font-family: 'San Francisco', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        background-color: #f5f5f7;
+        color: #333;
+      }
+      .navbar {
+        background-color: #1c1c1e;
+        color: #f5f5f7;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .navbar a {
+        color: #f5f5f7;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+      }
+      .navbar a:hover {
+        color: #a3a3a3;
+      }
+      .card {
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+      }
+      .section-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #1c1c1e;
+        margin-bottom: 20px;
+      }
+      .button-primary {
+        background-color: #007aff;
+        color: #ffffff;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: background-color 0.3s ease;
+      }
+      .button-primary:hover {
+        background-color: #005bb5;
+      }
+      .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+      }
+      select[multiple] {
+        height: auto;
+        min-height: 100px;
+        overflow-y: auto;
+      }
+      label {
+        font-size: 0.875rem;
+        color: #4b5563;
+      }
+      .button-primary {
+        display: block;
+        width: 100%;
+        text-align: center;
+      }
+      .multi-select {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        border: 1px solid #d1d5db;
+        padding: 5px;
+        border-radius: 8px;
+        background-color: #fff;
+      }
+      .multi-select span {
+        background-color: #007aff;
+        color: #fff;
+        padding: 5px 10px;
+        border-radius: 12px;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .multi-select span button {
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 0.75rem;
+        cursor: pointer;
+      }
+      .multi-select span button:hover {
+        color: #ff0000;
+      }
+    </style>
   </head>
-  
-  <body class="bg-gray-100 text-gray-800">
-    <div class="max-w-6xl mx-auto py-10 px-6">
-      <h1 class="text-4xl font-bold text-center mb-10 text-indigo-600">OasisReserve Dashboard</h1>
-  
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <!-- Add Customer -->
-        <div class="bg-white shadow rounded-lg p-6">
-          <h2 class="text-xl font-semibold mb-4">Add Customer</h2>
-          <form id="customerForm" class="space-y-3">
-            <input class="w-full border p-2 rounded" type="text" id="name" placeholder="Customer Name" required />
-            <input class="w-full border p-2 rounded" type="email" id="email" placeholder="Email" required />
-            <button class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700" type="submit">Add</button>
-          </form>
-        </div>
-  
-        <!-- Add Service -->
-        <div class="bg-white shadow rounded-lg p-6">
-          <h2 class="text-xl font-semibold mb-4">Add Service</h2>
-          <form id="serviceForm" class="space-y-3">
-            <input class="w-full border p-2 rounded" type="text" id="serviceName" placeholder="Service Name" required />
-            <input class="w-full border p-2 rounded" type="number" id="price" placeholder="Price" required />
-            <button class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700" type="submit">Add</button>
-          </form>
-        </div>
-  
-        <!-- Make Reservation -->
-        <div class="bg-white shadow rounded-lg p-6">
-          <h2 class="text-xl font-semibold mb-4">Make Reservation</h2>
-          <form id="reservationForm" class="space-y-3">
-            <input class="w-full border p-2 rounded" type="text" id="customerId" placeholder="Customer ID" required />
-            <select class="w-full border p-2 rounded" id="serviceId" required>
-              <option value="" disabled selected>Select a Service</option>
-            </select>
-            <input class="w-full border p-2 rounded" type="datetime-local" id="dateTime" required />
-            <button class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700" type="submit">Book</button>
-          </form>
-        </div>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar py-4 px-6">
+      <div class="max-w-6xl mx-auto flex justify-between items-center">
+        <a href="#" class="text-2xl font-bold">OasisReserve</a>
+        <ul class="flex space-x-6">
+          <li><a href="#addSection">Add Data</a></li>
+          <li><a href="#dataSection">View Data</a></li>
+          <li><a href="#overviewSection">Dashboard Overview</a></li>
+          <li><a href="#" id="logoutButton" class="hidden">Logout</a></li>
+        </ul>
       </div>
+    </nav>
+    <!-- Main Content -->
+    <div class="max-w-6xl mx-auto py-10 px-6">
+      <h1 class="text-4xl font-bold text-center mb-10 text-indigo-600">Welcome to OasisReserve</h1>
 
-      <div class="mt-10">
-        <h2 class="text-2xl font-bold text-center mb-6 text-indigo-600">All Data</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- Add Data Section -->
+      <section id="addSection" class="mb-10">
+        <h2 class="section-title">Add Data</h2>
+        <div class="dashboard-grid">
+          <!-- Add Customer -->
+          <div class="card">
+            <h3 class="text-lg font-semibold mb-4">Add Customer</h3>
+            <form id="customerForm" class="space-y-3">
+              <input class="w-full border p-2 rounded" type="text" id="name" placeholder="Customer Name" required />
+              <input class="w-full border p-2 rounded" type="email" id="email" placeholder="Email" required />
+              <button class="button-primary" type="submit">Add Customer</button>
+            </form>
+          </div>
+          <!-- Add Service -->
+          <div class="card">
+            <h3 class="text-lg font-semibold mb-4">Add Service</h3>
+            <form id="serviceForm" class="space-y-3">
+              <input class="w-full border p-2 rounded" type="text" id="serviceName" placeholder="Service Name" required />
+              <input class="w-full border p-2 rounded" type="number" id="price" placeholder="Price" required />
+              <button class="button-primary" type="submit">Add Service</button>
+            </form>
+          </div>
+          <!-- Make Reservation -->
+          <div class="card">
+            <h3 class="text-lg font-semibold mb-4">Make Reservation</h3>
+            <form id="reservationForm" class="space-y-4">
+              <label for="customerId" class="block font-medium text-gray-700">Select Customer</label>
+              <select class="w-full border p-2 rounded" id="customerId" required>
+                <option value="" disabled selected>Select a Customer</option>
+                <!-- Options will be dynamically loaded -->
+              </select>
+              <label for="serviceId" class="block font-medium text-gray-700">Select Service</label>
+              <select class="w-full border p-2 rounded" id="serviceId" required>
+                <option value="" disabled selected>Select a Service</option>
+                <!-- Options will be dynamically loaded -->
+              </select>
+              <label for="dateTime" class="block font-medium text-gray-700">Select Date and Time</label>
+              <input class="w-full border p-2 rounded" type="datetime-local" id="dateTime" required />
+              <button class="button-primary w-full" type="submit">Book Reservations</button>
+            </form>
+          </div>
+        </div>
+      </section>
+      <!-- View Data Section -->
+      <section id="dataSection" class="mb-10">
+        <h2 class="section-title">View Data</h2>
+        <div class="dashboard-grid">
           <!-- Customers -->
-          <div class="bg-white shadow rounded-lg p-6">
-            <h3 class="text-xl font-semibold mb-4">Customers</h3>
+          <div class="card">
+            <h3 class="text-lg font-semibold mb-4">Customers</h3>
             <ul id="customerList" class="space-y-2"></ul>
           </div>
-      
           <!-- Services -->
-          <div class="bg-white shadow rounded-lg p-6">
-            <h3 class="text-xl font-semibold mb-4">Services</h3>
+          <div class="card">
+            <h3 class="text-lg font-semibold mb-4">Services</h3>
             <ul id="serviceList" class="space-y-2"></ul>
           </div>
-      
           <!-- Reservations -->
-          <div class="bg-white shadow rounded-lg p-6">
-            <h3 class="text-xl font-semibold mb-4">Reservations</h3>
+          <div class="card">
+            <h3 class="text-lg font-semibold mb-4">Reservations</h3>
             <ul id="reservationList" class="space-y-2"></ul>
           </div>
         </div>
-      </div>
+      </section>
+      <!-- Dashboard Overview Section -->
+      <section id="overviewSection">
+        <h2 class="section-title">Dashboard Overview</h2>
+        <div class="dashboard-grid">
+          <!-- Key Metrics -->
+          <div class="card">
+            <h3 class="text-lg font-semibold mb-2">Total Customers</h3>
+            <p id="totalCustomers" class="text-3xl font-bold text-indigo-600">0</p>
+          </div>
+          <div class="card">
+            <h3 class="text-lg font-semibold mb-2">Total Reservations</h3>
+            <p id="totalReservations" class="text-3xl font-bold text-indigo-600">0</p>
+          </div>
+          <div class="card">
+            <h3 class="text-lg font-semibold mb-2">Active Services</h3>
+            <p id="activeServices" class="text-3xl font-bold text-indigo-600">0</p>
+          </div>
+          <div class="card">
+            <h3 class="text-lg font-semibold mb-2">Total Revenue</h3>
+            <p id="totalRevenue" class="text-3xl font-bold text-indigo-600">$0</p>
+          </div>
+        </div>
+        <!-- Graphs Section -->
+        <div class="mt-10">
+          <h3 class="section-title">Analytics</h3>
+          <div class="dashboard-grid">
+            <!-- Customers Growth Chart -->
+            <div class="card">
+              <h3 class="text-lg font-semibold mb-4">Customer Growth</h3>
+              <canvas id="customerGrowthChart"></canvas>
+            </div>
+            <!-- Reservations Trend Chart -->
+            <div class="card">
+              <h3 class="text-lg font-semibold mb-4">Reservations Trend</h3>
+              <canvas id="reservationsTrendChart"></canvas>
+            </div>
+            <!-- Revenue Chart -->
+            <div class="card">
+              <h3 class="text-lg font-semibold mb-4">Revenue Overview</h3>
+              <canvas id="revenueChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
-  
     <script>
       const BASE_URL = "http://localhost:8000";
 
-      const loadServicesDropdown = async () => {
-        const response = await fetch(`${BASE_URL}/services`);
-        const services = await response.json();
-        const serviceDropdown = document.getElementById("serviceId");
-        serviceDropdown.innerHTML = '<option value="" disabled selected>Select a Service</option>';
-        services.forEach((service) => {
-          const option = document.createElement("option");
-          option.value = service._id;
-          option.textContent = `${service.name} - $${service.price}`;
-          serviceDropdown.appendChild(option);
-        });
-      };
-
       document.addEventListener("DOMContentLoaded", () => {
+        loadCustomerDropdown();
         loadServicesDropdown();
         loadCustomers();
         loadServices();
         loadReservations();
+        loadDashboardMetrics();
       });
 
       document.getElementById("customerForm").addEventListener("submit", async (e) => {
@@ -104,6 +261,7 @@
         });
         const result = await response.json();
         alert(`Customer added: ${result.name}`);
+        loadCustomers();
       });
 
       document.getElementById("serviceForm").addEventListener("submit", async (e) => {
@@ -117,6 +275,7 @@
         });
         const result = await response.json();
         alert(`Service added: ${result.name}`);
+        loadServices();
       });
 
       document.getElementById("reservationForm").addEventListener("submit", async (e) => {
@@ -124,13 +283,22 @@
         const customerId = document.getElementById("customerId").value;
         const serviceId = document.getElementById("serviceId").value;
         const dateTime = document.getElementById("dateTime").value;
-        const response = await fetch(`${BASE_URL}/reservations`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ customerId, serviceId, bookingDate: dateTime }),
-        });
-        const result = await response.json();
-        alert(`Reservation made for Customer ID: ${result.customerId}`);
+        const reservation = { customerId, serviceId, bookingDate: dateTime };
+        try {
+          const response = await fetch(`${BASE_URL}/reservations`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(reservation),
+          });
+          if (response.ok) {
+            alert("Reservation successfully created!");
+            loadReservations();
+          } else {
+            alert("Failed to create reservation.");
+          }
+        } catch (error) {
+          console.error("Error creating reservation:", error);
+        }
       });
 
       const loadCustomers = async () => {
@@ -141,7 +309,6 @@
         customers.forEach((customer) => {
           const li = document.createElement("li");
           li.innerHTML = `
-            <strong>ID:</strong> ${customer._id} <br>
             <strong>Name:</strong> ${customer.name} <br>
             <strong>Email:</strong> ${customer.email}
             <div class="mt-2">
@@ -210,21 +377,30 @@
       };
 
       const loadReservations = async () => {
-        const response = await fetch(`${BASE_URL}/reservations`);
-        const reservations = await response.json();
-        const reservationList = document.getElementById("reservationList");
-        reservationList.innerHTML = "";
-        reservations.forEach((reservation) => {
-          const li = document.createElement("li");
-          li.innerHTML = `
-            Customer: ${reservation.customerId?.name || "Unknown"}, 
-            Service: ${reservation.serviceId?.name || "Unknown"}, 
-            Date: ${new Date(reservation.bookingDate).toLocaleString()}
-            <button class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600" onclick="editReservation('${reservation._id}')">Edit</button>
-            <button class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600" onclick="deleteReservation('${reservation._id}')">Delete</button>
-          `;
-          reservationList.appendChild(li);
-        });
+        try {
+          const response = await fetch(`${BASE_URL}/reservations`);
+          if (!response.ok) throw new Error("Failed to fetch reservations");
+          const reservations = await response.json();
+          const reservationList = document.getElementById("reservationList");
+          reservationList.innerHTML = "";
+          if (reservations.length === 0) {
+            reservationList.innerHTML = "<p class='text-gray-500'>No reservations found.</p>";
+            return;
+          }
+          reservations.forEach((reservation) => {
+            const li = document.createElement("li");
+            li.innerHTML = `
+              Customer: ${reservation.customerId?.name || "Unknown"}, 
+              Service: ${reservation.serviceId?.name || "Unknown"}, 
+              Date: ${new Date(reservation.bookingDate).toLocaleString()}
+              <button class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600" onclick="editReservation('${reservation._id}')">Edit</button>
+              <button class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600" onclick="deleteReservation('${reservation._id}')">Delete</button>
+            `;
+            reservationList.appendChild(li);
+          });
+        } catch (error) {
+          console.error("Error loading reservations:", error);
+        }
       };
 
       const deleteReservation = async (id) => {
@@ -248,13 +424,172 @@
         }
       };
 
+      const loadCustomerDropdown = async () => {
+        try {
+          const response = await fetch(`${BASE_URL}/customers`);
+          if (!response.ok) throw new Error("Failed to fetch customers");
+          const customers = await response.json();
+          const dropdown = document.getElementById("customerId");
+          dropdown.innerHTML = '<option value="" disabled selected>Select a Customer</option>';
+          customers.forEach((customer) => {
+            const option = document.createElement("option");
+            option.value = customer._id;
+            option.textContent = `${customer.name} (${customer.email})`;
+            dropdown.appendChild(option);
+          });
+        } catch (error) {
+          console.error("Error loading customers:", error);
+        }
+      };
+
+      const loadServicesDropdown = async () => {
+        try {
+          const response = await fetch(`${BASE_URL}/services`);
+          if (!response.ok) throw new Error("Failed to fetch services");
+          const services = await response.json();
+          const serviceDropdown = document.getElementById("serviceId");
+          serviceDropdown.innerHTML = '<option value="" disabled selected>Select a Service</option>'; // Reset options
+          services.forEach((service) => {
+            const option = document.createElement("option");
+            option.value = service._id;
+            option.textContent = `${service.name} - $${service.price}`;
+            serviceDropdown.appendChild(option);
+          });
+        } catch (error) {
+          console.error("Error loading services:", error);
+        }
+      };
+
+      const loadDashboardMetrics = async () => {
+        try {
+          const customersResponse = await fetch(`${BASE_URL}/customers`);
+          const customers = customersResponse.ok ? await customersResponse.json() : [];
+          document.getElementById("totalCustomers").textContent = customers.length;
+
+          const reservationsResponse = await fetch(`${BASE_URL}/reservations`);
+          const reservations = reservationsResponse.ok ? await reservationsResponse.json() : [];
+          document.getElementById("totalReservations").textContent = reservations.length;
+
+          const servicesResponse = await fetch(`${BASE_URL}/services`);
+          const services = servicesResponse.ok ? await servicesResponse.json() : [];
+          document.getElementById("activeServices").textContent = services.length;
+
+          const totalRevenue = reservations.reduce((sum, reservation) => {
+            return sum + (reservation.serviceId?.price || 0);
+          }, 0);
+          document.getElementById("totalRevenue").textContent = `$${totalRevenue}`;
+
+          // Initialize Charts
+          const customerGrowthCtx = document.getElementById("customerGrowthChart").getContext("2d");
+          new Chart(customerGrowthCtx, {
+            type: "line",
+            data: {
+              labels: customers.map((_, index) => `Month ${index + 1}`),
+              datasets: [{
+                label: "Customers",
+                data: customers.map((_, index) => index + 1),
+                borderColor: "rgba(75, 192, 192, 1)",
+                backgroundColor: "rgba(75, 192, 192, 0.2)",
+              }],
+            },
+          });
+
+          const reservationsTrendCtx = document.getElementById("reservationsTrendChart").getContext("2d");
+          new Chart(reservationsTrendCtx, {
+            type: "bar",
+            data: {
+              labels: reservations.map((_, index) => `Week ${index + 1}`),
+              datasets: [{
+                label: "Reservations",
+                data: reservations.map((_, index) => index + 1),
+                backgroundColor: "rgba(153, 102, 255, 0.6)",
+                borderColor: "rgba(153, 102, 255, 1)",
+              }],
+            },
+          });
+
+          const revenueCtx = document.getElementById("revenueChart").getContext("2d");
+          new Chart(revenueCtx, {
+            type: "pie",
+            data: {
+              labels: services.map((service) => service.name),
+              datasets: [{
+                label: "Revenue",
+                data: services.map((service) => reservations.filter((r) => r.serviceId?._id === service._id).length * service.price),
+                backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF"],
+              }],
+            },
+          });
+        } catch (error) {
+          console.error("Error loading dashboard metrics:", error);
+        }
+      };
+
+      const loadCustomerManagement = async () => {
+        try {
+          const response = await fetch(`${BASE_URL}/customers`);
+          if (!response.ok) throw new Error("Failed to fetch customers");
+          const customers = await response.json();
+          const customerManagement = document.getElementById("customerManagement");
+          customerManagement.innerHTML = "";
+          customers.forEach((customer) => {
+            const card = document.createElement("div");
+            card.className = "bg-white shadow rounded-lg p-4";
+            card.innerHTML = `
+              <h3 class="text-lg font-bold">${customer.name}</h3>
+              <p><strong>Email:</strong> ${customer.email}</p>
+              <p><strong>Phone:</strong> ${customer.phone || "N/A"}</p>
+              <div class="mt-4">
+                <button class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600" onclick="viewCustomerProfile('${customer._id}')">View Profile</button>
+                <button class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600" onclick="deleteCustomer('${customer._id}')">Delete</button>
+              </div>
+            `;
+            customerManagement.appendChild(card);
+          });
+        } catch (error) {
+          console.error("Error loading customer management:", error);
+        }
+      };
+
+      const viewCustomerProfile = async (customerId) => {
+        try {
+          const response = await fetch(`${BASE_URL}/customers/${customerId}`);
+          if (!response.ok) throw new Error("Failed to fetch customer details");
+          const customer = await response.json();
+          document.getElementById("customerProfileName").textContent = customer.name;
+          document.getElementById("customerProfileEmail").textContent = customer.email;
+          document.getElementById("customerProfilePhone").textContent = customer.phone || "N/A";
+
+          const bookingHistoryResponse = await fetch(`${BASE_URL}/reservations?customerId=${customerId}`);
+          const bookings = bookingHistoryResponse.ok ? await bookingHistoryResponse.json() : [];
+          const bookingHistory = document.getElementById("customerBookingHistory");
+          bookingHistory.innerHTML = bookings.length
+            ? bookings.map((booking) => `<li>${new Date(booking.bookingDate).toLocaleString()} - ${booking.serviceId?.name || "Unknown"}</li>`).join("")
+            : "<p class='text-gray-500'>No bookings found for this customer.</p>";
+          document.getElementById("customerProfileModal").classList.remove("hidden");
+        } catch (error) {
+          console.error("Error viewing customer profile:", error);
+        }
+      };
+
+      document.getElementById("closeCustomerProfile").addEventListener("click", () => {
+        document.getElementById("customerProfileModal").classList.add("hidden");
+      });
+
+      document.getElementById("searchCustomer").addEventListener("input", (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const customerCards = document.querySelectorAll("#customerManagement > div");
+        customerCards.forEach((card) => {
+          const name = card.querySelector("h3").textContent.toLowerCase();
+          const email = card.querySelector("p").textContent.toLowerCase();
+          card.style.display = name.includes(searchTerm) || email.includes(searchTerm) ? "block" : "none";
+        });
+      });
+
       document.addEventListener("DOMContentLoaded", () => {
-        loadCustomers();
-        loadServices();
-        loadReservations();
+        loadCustomerManagement();
       });
     </script>
   </body>
-  
 </html>
 

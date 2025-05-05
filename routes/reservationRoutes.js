@@ -7,8 +7,11 @@ router.post('/', async (req, res) => {
   try {
     const newReservation = new Reservation(req.body);
     const saved = await newReservation.save();
-    console.log('New reservation made:', saved); // Log reservation details
-    res.status(201).json(saved);
+    const populatedReservation = await Reservation.findById(saved._id)
+      .populate('customerId', 'name email')
+      .populate('serviceId', 'name price');
+    console.log('New reservation made:', populatedReservation); // Log reservation details
+    res.status(201).json(populatedReservation);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
