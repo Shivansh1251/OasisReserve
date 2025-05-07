@@ -6,13 +6,6 @@
     <title>OasisReserve Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.8/main.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.8/main.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.8/main.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.8/main.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid@6.1.8/main.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@6.1.8/main.min.js"></script>
     <style>
       /* Custom CSS for a macOS-like user experience */
       body {
@@ -110,6 +103,60 @@
       .multi-select span button:hover {
         color: #ff0000;
       }
+      .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+      .modal-content {
+        max-width: 500px;
+        width: 100%;
+      }
+      /* Notification styles */
+      .notification-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        z-index: 1000;
+      }
+      .notification {
+        background-color: #007aff;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        animation: fadeIn 0.3s ease, fadeOut 0.3s ease 2.7s;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes fadeOut {
+        from {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        to {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+      }
     </style>
   </head>
   <body>
@@ -121,7 +168,8 @@
           <li><a href="#addSection">Add Data</a></li>
           <li><a href="#dataSection">View Data</a></li>
           <li><a href="#overviewSection">Dashboard Overview</a></li>
-          <li><a href="#" id="logoutButton" class="hidden">Logout</a></li>
+          <li><a href="#analyticsSection">Analytics</a></li>
+          <li><a href="#" id="logoutButton" onclick="logout()">Logout</a></li>
         </ul>
       </div>
     </nav>
@@ -238,8 +286,35 @@
         </div>
       </section>
     </div>
+    <!-- Notification Container -->
+    <div id="notificationContainer" class="notification-container"></div>
+    <div id="notificationModal" class="modal hidden">
+      <div class="modal-content bg-white shadow rounded-lg p-6">
+        <h2 id="notificationTitle" class="text-xl font-bold mb-4">Notification</h2>
+        <p id="notificationMessage" class="mb-4"></p>
+        <button id="closeNotificationModal" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Close</button>
+      </div>
+    </div>
     <script>
       const BASE_URL = "http://localhost:8000";
+
+      const showNotification = (message) => {
+        const container = document.getElementById("notificationContainer");
+        const notification = document.createElement("div");
+        notification.className = "notification";
+        notification.textContent = message;
+
+        container.appendChild(notification);
+
+        // Remove notification after 10 seconds
+        setTimeout(() => {
+          notification.remove();
+        }, 10000);
+      };
+
+      document.getElementById("closeNotificationModal").addEventListener("click", () => {
+        document.getElementById("notificationModal").classList.add("hidden");
+      });
 
       document.addEventListener("DOMContentLoaded", () => {
         loadCustomerDropdown();
@@ -252,16 +327,26 @@
 
       document.getElementById("customerForm").addEventListener("submit", async (e) => {
         e.preventDefault();
-        const name = document.getElementById("name").value;
-        const email = document.getElementById("email").value;
-        const response = await fetch(`${BASE_URL}/customers`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email }),
-        });
-        const result = await response.json();
-        alert(`Customer added: ${result.name}`);
-        loadCustomers();
+        const nameInput = document.getElementById("name");
+        const emailInput = document.getElementById("email");
+        const name = nameInput.value;
+        const email = emailInput.value;
+
+        try {
+          const response = await fetch(`${BASE_URL}/customers`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, email }),
+          });
+          const result = await response.json();
+          showNotification(`Customer added: ${result.name}`);
+          loadCustomers();
+          loadCustomerDropdown(); // Reload customers in the reservations dropdown
+          nameInput.value = ""; // Clear the name input field
+          emailInput.value = ""; // Clear the email input field
+        } catch (error) {
+          console.error("Error adding customer:", error);
+        }
       });
 
       document.getElementById("serviceForm").addEventListener("submit", async (e) => {
@@ -274,7 +359,7 @@
           body: JSON.stringify({ name, price }),
         });
         const result = await response.json();
-        alert(`Service added: ${result.name}`);
+        showNotification(`Service added: ${result.name}`);
         loadServices();
       });
 
@@ -291,10 +376,10 @@
             body: JSON.stringify(reservation),
           });
           if (response.ok) {
-            alert("Reservation successfully created!");
+            showNotification("Reservation successfully created!");
             loadReservations();
           } else {
-            alert("Failed to create reservation.");
+            showNotification("Failed to create reservation.");
           }
         } catch (error) {
           console.error("Error creating reservation:", error);
@@ -589,6 +674,10 @@
       document.addEventListener("DOMContentLoaded", () => {
         loadCustomerManagement();
       });
+
+      const logout = () => {
+        window.location.href = "/main.html"; // Redirect to main.html or change to "/" if needed
+      };
     </script>
   </body>
 </html>

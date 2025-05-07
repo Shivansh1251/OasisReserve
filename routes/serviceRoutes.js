@@ -14,11 +14,10 @@ router.post('/', async (req, res) => {
   }
 });
 
-// GET all services sab
+// GET all services
 router.get('/', async (req, res) => {
   try {
     const services = await Service.find();
-    if (!services) return res.status(404).json({ error: 'No services found' });
     res.json(services);
   } catch (err) {
     res.status(500).json({ error: err.message });
