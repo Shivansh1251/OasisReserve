@@ -129,7 +129,7 @@
             // Handle Login
             document.getElementById("loginForm").addEventListener("submit", async (e) => {
                 e.preventDefault();
-                const email = document.getElementById("loginUsername").value.trim();
+                const email = document.getElementById("loginUsername").value.trim().toLowerCase(); // Convert email to lowercase
                 const password = document.getElementById("loginPassword").value.trim();
 
                 if (!email || !password) {
@@ -150,11 +150,11 @@
                         window.location.href = data.user.role === "admin" ? "/admin" : "/dashboard";
                     } else {
                         const errorData = await response.json();
-                        alert(`Error: ${errorData.error}`);
+                        alert(`Error: ${errorData.error || "Invalid credentials. Please try again."}`);
                     }
                 } catch (error) {
                     console.error("Error during login:", error);
-                    alert("An unexpected error occurred.");
+                    alert("An unexpected error occurred. Please check your network connection.");
                 }
             });
 
@@ -183,11 +183,11 @@
                         window.location.href = role === "admin" ? "/admin" : "/dashboard";
                     } else {
                         const errorData = await response.json();
-                        alert(`Error: ${errorData.error}`);
+                        alert(`Error: ${errorData.error || "Unable to sign up. Please try again."}`);
                     }
                 } catch (error) {
                     console.error("Error during sign-up:", error);
-                    alert("An unexpected error occurred.");
+                    alert("An unexpected error occurred. Please check your network connection.");
                 }
             });
 

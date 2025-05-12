@@ -169,7 +169,7 @@
           <li><a href="#dataSection">View Data</a></li>
           <li><a href="#overviewSection">Dashboard Overview</a></li>
           <li><a href="#analyticsSection">Analytics</a></li>
-          <li><a href="#" id="logoutButton" onclick="logout()">Logout</a></li>
+          <li><a href="/" id="logoutButton" onclick="logout()">Logout</a></li>
         </ul>
       </div>
     </nav>
@@ -467,7 +467,7 @@
           if (!response.ok) throw new Error("Failed to fetch reservations");
           const reservations = await response.json();
           const reservationList = document.getElementById("reservationList");
-          reservationList.innerHTML = "";
+          reservationList.innerHTML = ""; // Clear existing list
           if (reservations.length === 0) {
             reservationList.innerHTML = "<p class='text-gray-500'>No reservations found.</p>";
             return;
@@ -475,11 +475,9 @@
           reservations.forEach((reservation) => {
             const li = document.createElement("li");
             li.innerHTML = `
-              Customer: ${reservation.customerId?.name || "Unknown"}, 
-              Service: ${reservation.serviceId?.name || "Unknown"}, 
-              Date: ${new Date(reservation.bookingDate).toLocaleString()}
-              <button class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600" onclick="editReservation('${reservation._id}')">Edit</button>
-              <button class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600" onclick="deleteReservation('${reservation._id}')">Delete</button>
+              <strong>Customer:</strong> ${reservation.customerId?.name || "Unknown"} <br>
+              <strong>Service:</strong> ${reservation.serviceId?.name || "Unknown"} <br>
+              <strong>Date:</strong> ${new Date(reservation.bookingDate).toLocaleString()}
             `;
             reservationList.appendChild(li);
           });
@@ -676,7 +674,7 @@
       });
 
       const logout = () => {
-        window.location.href = "/main.html"; // Redirect to main.html or change to "/" if needed
+        window.location.href = "/"; // Redirect to main.html or change to "/" if needed
       };
     </script>
   </body>

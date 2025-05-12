@@ -86,7 +86,7 @@ body {
                 <li><a href="#upcoming-reservations" class="hover:text-gray-400">Reservations</a></li>
                 <li><a href="#booking-history" class="hover:text-gray-400">History</a></li>
                 <li><a href="#edit-profile" class="hover:text-gray-400">Profile</a></li>
-                <li><a href="#logout" id="logout-link" class="hover:text-gray-400">Logout</a></li>
+                <li><a href="/" id="logout-link" class="hover:text-gray-400">Logout</a></li>
             </ul>
             <!-- Removed mobile menu toggle button and menu -->
         </div>
@@ -98,7 +98,7 @@ body {
     <div class="w-full max-w-3xl mt-6">
         <!-- Welcome Card -->
         <section id="welcome-card" class="text-center bg-white shadow-md rounded-lg p-4 mb-4">
-            <h1 class="text-xl font-bold">Welcome, <span id="user-name">[User Name]</span>!</h1>
+            <h1 class="text-xl font-bold">Welcome, <span id="user-name"></span>!</h1>
             <p class="text-gray-600">Email: <span id="user-email">[User Email]</span></p>
         </section>
 
@@ -274,39 +274,75 @@ body {
         const loadReservations = async () => {
             try {
                 const response = await fetch(`${BASE_URL}/reservations`);
+                if (!response.ok) throw new Error("Failed to fetch reservations");
                 const reservations = await response.json();
-                const reservationList = document.getElementById("reservationList");
+                const reservationList = document.getElementById("reservations-list");
                 reservationList.innerHTML = ""; // Clear existing list
+                if (reservations.length === 0) {
+                    reservationList.innerHTML = "<li class='text-gray-500'>No reservations found.</li>";
+                    return;
+                }
                 reservations.forEach((reservation) => {
                     const li = document.createElement("li");
+                    li.className = 'p-3 border rounded-lg bg-gray-50';
                     li.innerHTML = `
-                        Customer: ${reservation.customerId?.name || "Unknown"}, 
-                        Service: ${reservation.serviceId?.name || "Unknown"}, 
-                        Date: ${new Date(reservation.bookingDate).toLocaleString()}
-                        <button class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600" onclick="editReservation('${reservation._id}')">Edit</button>
-                        <button class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600" onclick="deleteReservation('${reservation._id}')">Delete</button>
+                        <p><strong>Date:</strong> ${new Date(reservation.bookingDate).toLocaleDateString()}</p>
+                        <p><strong>Time:</strong> ${new Date(reservation.bookingDate).toLocaleTimeString()}</p>
+                        <p><strong>Service:</strong> ${reservation.serviceId?.name || "Unknown"}</p>
+                        <p><strong>Status:</strong> ${reservation.status}</p>
                     `;
                     reservationList.appendChild(li);
                 });
             } catch (error) {
-                console.error("Error fetching reservations:", error);
+                console.error("Error fetching reservations:", error.message);
+                const reservationList = document.getElementById("reservations-list");
+                reservationList.innerHTML = "<li class='text-red-500'>Failed to load reservations.</li>";
             }
         };
 
         // Fetch and display logged-in user details
         const loadLoggedInUser = async () => {
             try {
-                const response = await fetch(`${BASE_URL}/auth/user`, {
+                const response = await fetch(`${BASE_URL}/api/users/user`, {
                     credentials: 'include', // Include cookies for authentication
                 });
                 if (!response.ok) {
                     throw new Error('Failed to fetch user details');
                 }
                 const user = await response.json();
-                document.getElementById('user-name').textContent = user.name;
-                document.getElementById('user-email').textContent = user.email;
+
+                // Update user details in the DOM
+                document.getElementById('user-name').textContent = user.name || 'N/A';
+                document.getElementById('user-email').textContent = user.email || 'N/A';
+
+                // Fetch and display user's reservations
+                const reservationsResponse = await fetch(`${BASE_URL}/reservations?mockUserId=${user._id}`);
+                if (!reservationsResponse.ok) {
+                    throw new Error('Failed to fetch user reservations');
+                }
+                const reservations = await reservationsResponse.json();
+                const reservationsList = document.getElementById('reservations-list');
+                reservationsList.innerHTML = ""; // Clear existing reservations
+                reservations.forEach((reservation) => {
+                    const li = document.createElement('li');
+                    li.className = 'p-3 border rounded-lg bg-gray-50';
+                    li.innerHTML = `
+                        <p>Date: <span>${new Date(reservation.bookingDate).toLocaleDateString()}</span></p>
+                        <p>Time: <span>${new Date(reservation.bookingDate).toLocaleTimeString()}</span></p>
+                        <p>Service: <span>${reservation.serviceId?.name || 'Unknown'}</span></p>
+                        <p>Status: <span>${reservation.status}</span></p>
+                    `;
+                    reservationsList.appendChild(li);
+                });
             } catch (error) {
-                console.error("Error fetching logged-in user details:", error);
+                console.error("Error fetching logged-in user details or reservations:", error);
+
+                // Fallback for user details
+                document.getElementById('user-name').textContent = '[User Name]';
+                document.getElementById('user-email').textContent = '[User Email]';
+
+                // Clear reservations list on error
+                document.getElementById('reservations-list').innerHTML = '<li class="text-red-500">Failed to load reservations.</li>';
             }
         };
 
@@ -315,7 +351,7 @@ body {
             loadLoggedInUser();
             loadCustomers();
             loadServices();
-            loadReservations();
+            loadReservations(); // Ensure this function is called
         });
     </script>
 </body>

@@ -17,10 +17,23 @@ router.post('/', async (req, res) => {
   }
 });
 
-// GET all reservations
+// GET reservations for the logged-in user
 router.get('/', async (req, res) => {
   try {
     const reservations = await Reservation.find()
+      .populate('customerId', 'name email')
+      .populate('serviceId', 'name price');
+    res.json(reservations);
+  } catch (err) {
+    console.error("Error fetching reservations:", err.message); // Log the error
+    res.status(500).json({ error: 'Failed to fetch reservations' });
+  }
+});
+
+// GET reservations for a specific user
+router.get('/user/:userId', async (req, res) => {
+  try {
+    const reservations = await Reservation.find({ customerId: req.params.userId })
       .populate('customerId', 'name email')
       .populate('serviceId', 'name price');
     res.json(reservations);

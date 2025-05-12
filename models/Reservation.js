@@ -5,6 +5,7 @@ const reservationSchema = new mongoose.Schema({
   serviceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Service', required: true },
   bookingDate: { type: Date, required: true },
   status: { type: String, enum: ['confirmed', 'cancelled', 'pending'], default: 'confirmed' },
+  notes: { type: String, default: '' } // Optional field for additional notes
 });
 
 module.exports = mongoose.model('Reservation', reservationSchema);

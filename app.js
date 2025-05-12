@@ -34,9 +34,9 @@ app.get('/dashboard', (req, res) => {
 
 // Use routes
 app.use('/customers', customerRoutes);
-app.use('/reservations', reservationRoutes);
+app.use('/reservations', reservationRoutes); 
 app.use('/services', serviceRoutes);
-app.use('/api/users', userRoutes); // Use user routes for signup and login
+app.use('/api/users', userRoutes); 
 
 // Handle 404 errors
 app.use((req, res) => {
