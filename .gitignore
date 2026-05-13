@@ -1,0 +1,9 @@
+Backend/node_modules/
+Frontend/node_modules/
+Backend/.env
+Frontend/.env
+Backend/.vercel
+Frontend/dist/
+*.log
+Thumbs.db
+.DS_Store
