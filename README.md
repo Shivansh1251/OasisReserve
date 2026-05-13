@@ -1,5 +1,6 @@
 # OasisReserve
 
+
 OasisReserve is my hospitality management SaaS for hotels, guest stays, and reservation operations. It combines a modern React frontend with an Express and MongoDB backend to help teams manage customers, services, reservations, reports, and staff in one place.
 
 ## What It Can Do
@@ -64,3 +65,10 @@ npm run dev
 ## Made By Me
 
 This project was built by me as a complete hospitality management dashboard and SaaS-style admin system.
+
+OasisReserve is a reservation management system for customers and services. It includes an admin dashboard and user-friendly interfaces for managing reservations.
+
+## License
+
+This project is licensed under the MIT License.
+

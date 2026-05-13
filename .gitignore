@@ -1,3 +1,4 @@
+
 Backend/node_modules/
 Frontend/node_modules/
 Backend/.env
@@ -7,3 +8,7 @@ Frontend/dist/
 *.log
 Thumbs.db
 .DS_Store
+node_modules
+.env
+.DS_Store
+
