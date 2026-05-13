@@ -35,7 +35,6 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
 // Use built-in express JSON parser
 app.use(express.json());
 
